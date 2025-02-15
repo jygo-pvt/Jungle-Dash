@@ -30,6 +30,7 @@
       padding-top: 20px;
       border-top: 1px solid #ddd;
       font-size: 1rem;
+      text-align: center;
     }
   </style>
 </head>
@@ -60,7 +61,7 @@
   </div>
 
   <!-- Footer -->
-  <footer class="text-center">
+  <footer>
     <p>Developed by Sujan Paudyal</p>
     <p>
       <a href="https://www.facebook.com/sujanpaudyals" target="_blank">
@@ -74,16 +75,21 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     /**
+     * Validate the Bikram Sambat (BS) date based on expected month lengths.
+     * Defaults based on your provided table:
+     *   Baishakh: 31, Jestha: 31, Ashadh: 31, Shrawan: 31, Bhadau: 31,
+     *   Asoj: 30, Kartik: 29, Mangsir: 29, Poush: 29, Magh: 29, Falgun: 29, Chaitra: 30.
+     */
+    function isValidBSDate(year, month, day) {
+      if (month < 1 || month > 12) return false;
+      const bsMonthDays = [31, 31, 31, 31, 31, 30, 29, 29, 29, 29, 29, 30];
+      return day >= 1 && day <= bsMonthDays[month - 1];
+    }
+
+    /**
      * Approximate conversion from Bikram Sambat (BS) to Anno Domini (AD).
      * This function subtracts 56 years, 8 months, and 16 days from the BS date.
      * Input format must be "YYYY-MM-DD". The result is formatted as "YYYY-MM-DD".
-     *
-     * For example, for BS 2059-11-15:
-     *   adYear = 2059 - 56 = 2003
-     *   adMonth = 11 - 8 = 3
-     *   adDay = 15 - 16 = -1  -> Adjusted to previous month:
-     *      New adMonth = 2 and adDay = (Days in Feb 2003) + (-1) = 28 - 1 = 27.
-     *   Result: 2003-02-27
      */
     function convertBSToAD(bsDateStr) {
       const parts = bsDateStr.split("-");
@@ -93,42 +99,49 @@
       let bsYear = parseInt(parts[0], 10);
       let bsMonth = parseInt(parts[1], 10);
       let bsDay = parseInt(parts[2], 10);
+      
       if (isNaN(bsYear) || isNaN(bsMonth) || isNaN(bsDay)) {
         return null;
       }
+      
+      // Validate BS date using the BS month days table.
+      if (!isValidBSDate(bsYear, bsMonth, bsDay)) {
+        return null;
+      }
 
-      // Use offset: 56 years, 8 months, and 16 days
+      // Conversion offset: subtract 56 years, 8 months, and 16 days.
       let adYear = bsYear - 56;
       let adMonth = bsMonth - 8;
       let adDay = bsDay - 16;
 
-      // Adjust day if it becomes 0 or negative
+      // Adjust day if it becomes 0 or negative.
       if (adDay <= 0) {
         adMonth -= 1;
+        // Get number of days in the previous AD month.
         let dateForPrevMonth = new Date(adYear, adMonth, 0);
         let daysInPrevMonth = dateForPrevMonth.getDate();
         adDay = daysInPrevMonth + adDay;
       }
-
-      // Adjust month if it becomes 0 or negative
+      
+      // Adjust month if it becomes 0 or negative.
       if (adMonth <= 0) {
         adYear -= 1;
         adMonth += 12;
       }
 
-      // Construct and format the AD date
+      // Construct and format the AD date.
       let adDate = new Date(adYear, adMonth - 1, adDay);
       let yyyy = adDate.getFullYear();
       let mm = adDate.getMonth() + 1;
       let dd = adDate.getDate();
 
-      // Add leading zeros if needed
+      // Add leading zeros if needed.
       mm = mm < 10 ? "0" + mm : mm;
       dd = dd < 10 ? "0" + dd : dd;
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // Handle form submission
+    // Handle form submission.
     document.getElementById("dateForm").addEventListener("submit", function (e) {
       e.preventDefault();
       const nepaliDateInput = document.getElementById("nepaliDate").value.trim();
@@ -140,7 +153,7 @@
           outputElement.textContent = `Converted English Date: ${converted}`;
         } else {
           outputElement.textContent =
-            "Invalid Nepali date format! Please use YYYY-MM-DD.";
+            "Invalid Nepali date format or out-of-range day! Please use YYYY-MM-DD.";
         }
       } else {
         outputElement.textContent = "Please enter a valid Nepali date.";
