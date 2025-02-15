@@ -16,6 +16,9 @@
       max-width: 600px;
       margin-top: 100px;
     }
+    .output {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -30,7 +33,7 @@
     <button type="submit" class="btn btn-primary w-100">Convert</button>
   </form>
 
-  <div class="mt-4">
+  <div class="output">
     <h4>Converted English Date (Gregorian Calendar):</h4>
     <p id="englishDate" class="bg-light p-2"></p>
   </div>
@@ -43,21 +46,23 @@
 <script>
   // Function to handle form submission
   document.getElementById('dateForm').addEventListener('submit', function(e) {
-    e.preventDefault();
+    e.preventDefault();  // Prevent the default form submission
     
-    const nepaliDate = document.getElementById('nepaliDate').value;
+    const nepaliDate = document.getElementById('nepaliDate').value.trim();  // Get input date
     
     if (nepaliDate) {
       // Convert Nepali date to English (Gregorian)
-      const convertedDate = NepaliDate.toEnglish(nepaliDate);
+      const convertedDate = NepaliDate.toEnglish(nepaliDate);  // Using NepaliDate library to convert
       
       if (convertedDate) {
-        // Show the converted English date
-        document.getElementById('englishDate').textContent = convertedDate;
+        // Display the converted English date
+        document.getElementById('englishDate').textContent = `The English date is: ${convertedDate}`;
       } else {
-        document.getElementById('englishDate').textContent = "Invalid Nepali date format!";
+        // Show error if the conversion fails
+        document.getElementById('englishDate').textContent = "Invalid Nepali date format! Please use YYYY-MM-DD.";
       }
     } else {
+      // If no date entered
       document.getElementById('englishDate').textContent = "Please enter a valid Nepali date.";
     }
   });
