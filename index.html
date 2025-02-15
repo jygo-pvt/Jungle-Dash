@@ -3,161 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jungle Dash Game Design Document</title>
+  <title>Jungle Dash Game</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
+      margin: 0;
+      padding: 0;
+      background-color: #2c6e2f;
+    }
+    #gameCanvas {
+      display: block;
       background-color: #f4f4f9;
-      font-family: 'Arial', sans-serif;
-      color: #333;
+      margin: 0 auto;
+      border: 2px solid #000;
     }
-    .section-title {
-      font-size: 2.5rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
-      color: #2c6e2f;
-    }
-    .game-overview, .core-features, .game-progression, .monetization {
-      margin-bottom: 3rem;
-    }
-    .card {
-      margin: 1rem 0;
-      border-radius: 10px;
-    }
-    .card-header {
-      background-color: #2c6e2f;
+    .score {
+      font-size: 2rem;
       color: white;
-      font-size: 1.25rem;
-      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      left: 10px;
     }
-    .card-body {
-      font-size: 1rem;
-    }
-    .footer {
-      text-align: center;
-      padding: 1rem;
-      background-color: #2c6e2f;
-      color: white;
+    .game-over {
+      font-size: 3rem;
+      color: red;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <div class="container py-5">
-    <h1 class="text-center mb-5 text-success">Game Design Document: Jungle Dash</h1>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <div class="score" id="score">Score: 0</div>
+  <div class="game-over" id="gameOver">Game Over!</div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const gameOverElement = document.getElementById('gameOver');
+
+    // Game variables
+    const playerWidth = 50;
+    const playerHeight = 50;
+    let playerX = 50;
+    let playerY = canvas.height - playerHeight - 10;
+    let playerVelocityY = 0;
+    let gravity = 0.8;
+    let jumpPower = -15;
+    let isJumping = false;
+    let score = 0;
+    let gameInterval;
     
-    <!-- Game Overview Section -->
-    <div class="game-overview">
-      <h2 class="section-title">Game Overview</h2>
-      <p>
-        Jungle Dash is an engaging and fast-paced platformer where the player controls a character running through a vibrant jungle environment. The player must collect coins and power-ups while avoiding various obstacles that become increasingly challenging as the game progresses. Smooth animations, responsive controls, and a rewarding progression system make for an immersive and enjoyable experience.
-      </p>
-    </div>
+    // Obstacles and Coins
+    let obstacles = [];
+    let coins = [];
+    let obstacleSpeed = 3;
+    let coinSpeed = 2;
 
-    <!-- Core Gameplay Features Section -->
-    <div class="core-features">
-      <h2 class="section-title">Core Gameplay Features</h2>
+    // Player jump controls
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !isJumping) {
+        playerVelocityY = jumpPower;
+        isJumping = true;
+      }
+    });
 
-      <!-- Player Character -->
-      <div class="card">
-        <div class="card-header">Player Character</div>
-        <div class="card-body">
-          <ul>
-            <li>Runs automatically at a constant speed.</li>
-            <li>Can jump to navigate obstacles and collect coins.</li>
-            <li>Can double-jump (optional power-up ability).</li>
-            <li>Has smooth animations for running, jumping, and landing.</li>
-            <li>Responsive controls for intuitive gameplay.</li>
-          </ul>
-        </div>
-      </div>
+    // Game loop
+    function gameLoop() {
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      <!-- Obstacles -->
-      <div class="card">
-        <div class="card-header">Obstacles</div>
-        <div class="card-body">
-          <ul>
-            <li><strong>Rocks and Stones:</strong> Stationary hazards that must be jumped over.</li>
-            <li><strong>Logs and Branches:</strong> Some are static, while others roll towards the player.</li>
-            <li><strong>Spiky Vines:</strong> Hanging obstacles that require precise jumping to avoid.</li>
-            <li><strong>Water Pits:</strong> Must be leaped over to prevent the player from falling.</li>
-          </ul>
-        </div>
-      </div>
+      // Draw player
+      ctx.fillStyle = 'brown';
+      ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
 
-      <!-- Coins and Power-ups -->
-      <div class="card">
-        <div class="card-header">Coins and Power-ups</div>
-        <div class="card-body">
-          <h5>Coins:</h5>
-          <ul>
-            <li>Scattered throughout the level.</li>
-            <li>Increase the player's score.</li>
-            <li>Used to unlock new skins and power-ups in the in-game shop.</li>
-          </ul>
-          <h5>Power-ups:</h5>
-          <ul>
-            <li><strong>Shield:</strong> Temporarily protects the player from obstacles.</li>
-            <li><strong>Speed Boost:</strong> Increases running speed for a short time.</li>
-            <li><strong>Magnet:</strong> Attracts coins within a certain radius.</li>
-            <li><strong>Double Jump:</strong> Allows the player to jump again mid-air.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+      // Apply gravity
+      if (playerY + playerHeight < canvas.height) {
+        playerVelocityY += gravity;
+      } else {
+        playerVelocityY = 0;
+        isJumping = false;
+        playerY = canvas.height - playerHeight - 10;
+      }
+      playerY += playerVelocityY;
 
-    <!-- Game Progression Section -->
-    <div class="game-progression">
-      <h2 class="section-title">Game Progression</h2>
-      <div class="card">
-        <div class="card-header">Level-Based Progression</div>
-        <div class="card-body">
-          <ul>
-            <li>Each level introduces new obstacles and mechanics.</li>
-            <li>Increasing difficulty ensures a balanced challenge.</li>
-          </ul>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">Endless Mode (Optional)</div>
-        <div class="card-body">
-          <ul>
-            <li>Players can run indefinitely for high scores.</li>
-            <li>Randomized level elements keep the experience fresh.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
+      // Handle obstacles
+      if (Math.random() < 0.01) {
+        createObstacle();
+      }
+      obstacles.forEach((obstacle, index) => {
+        obstacle.x -= obstacleSpeed;
+        ctx.fillStyle = 'gray';
+        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        if (obstacle.x + obstacle.width < 0) {
+          obstacles.splice(index, 1);
+          score += 10;
+        }
+        // Collision detection
+        if (playerX < obstacle.x + obstacle.width &&
+            playerX + playerWidth > obstacle.x &&
+            playerY < obstacle.y + obstacle.height &&
+            playerY + playerHeight > obstacle.y) {
+          endGame();
+        }
+      });
 
-    <!-- Monetization Strategy Section -->
-    <div class="monetization">
-      <h2 class="section-title">Monetization Strategy</h2>
-      <div class="card">
-        <div class="card-header">In-App Purchases</div>
-        <div class="card-body">
-          <ul>
-            <li>Cosmetic skins for the player character.</li>
-            <li>Coin packs to accelerate unlocks.</li>
-          </ul>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-header">Ads</div>
-        <div class="card-body">
-          <ul>
-            <li>Rewarded ads for extra coins or second chances.</li>
-            <li>Interstitial ads between levels (optional and non-intrusive).</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+      // Handle coins
+      if (Math.random() < 0.02) {
+        createCoin();
+      }
+      coins.forEach((coin, index) => {
+        coin.x -= coinSpeed;
+        ctx.fillStyle = 'yellow';
+        ctx.beginPath();
+        ctx.arc(coin.x, coin.y, coin.radius, 0, Math.PI * 2);
+        ctx.fill();
+        if (coin.x + coin.radius < 0) {
+          coins.splice(index, 1);
+        }
+        // Coin collection
+        if (playerX < coin.x + coin.radius &&
+            playerX + playerWidth > coin.x - coin.radius &&
+            playerY < coin.y + coin.radius &&
+            playerY + playerHeight > coin.y - coin.radius) {
+          score += 5;
+          coins.splice(index, 1);
+        }
+      });
 
-  <!-- Footer -->
-  <footer class="footer">
-    <p>&copy; 2025 Jungle Dash - Game Design Document</p>
-  </footer>
+      // Update score
+      scoreElement.innerText = `Score: ${score}`;
+    }
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    // Create obstacle
+    function createObstacle() {
+      const obstacleHeight = Math.random() * 40 + 30;
+      const obstacleY = canvas.height - obstacleHeight - 10;
+      obstacles.push({
+        x: canvas.width,
+        y: obstacleY,
+        width: 40,
+        height: obstacleHeight,
+      });
+    }
+
+    // Create coin
+    function createCoin() {
+      const coinY = Math.random() * (canvas.height - 100) + 50;
+      coins.push({
+        x: canvas.width,
+        y: coinY,
+        radius: 10,
+      });
+    }
+
+    // End game
+    function endGame() {
+      clearInterval(gameInterval);
+      gameOverElement.style.display = 'block';
+    }
+
+    // Start game
+    function startGame() {
+      gameInterval = setInterval(gameLoop, 1000 / 60); // 60 FPS
+    }
+
+    // Initialize game
+    startGame();
+  </script>
+
 </body>
 </html>
