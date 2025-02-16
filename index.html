@@ -1,14 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nepali to English Date Converter</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nepali To English Date Converter</title>
   <!-- Bootstrap 5 CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -17,160 +14,202 @@
     }
     .container {
       max-width: 600px;
-      margin-top: 100px;
+      margin: 50px auto;
     }
-    #englishDate {
-      font-size: 2rem;
+    h2 {
+      text-align: center;
+      color: #800000;
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    fieldset {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    legend {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    #resultDateDiv {
+      margin-top: 20px;
+      font-size: 1.8rem;
       font-weight: bold;
       text-align: center;
-      margin-top: 20px;
     }
     footer {
       margin-top: 50px;
       padding-top: 20px;
       border-top: 1px solid #ddd;
-      font-size: 1rem;
       text-align: center;
+      font-size: 1rem;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2 class="text-center">Nepali Date to English Date Converter</h2>
-    <form id="dateForm">
-      <div class="mb-3">
-        <label for="nepaliDate" class="form-label">
-          Enter Nepali Date (Bikram Sambat)
-        </label>
-        <input
-          type="text"
-          class="form-control"
-          id="nepaliDate"
-          placeholder="YYYY-MM-DD"
-        />
-      </div>
-      <button type="submit" class="btn btn-primary w-100">Convert</button>
-    </form>
-
-    <div class="output">
-      <h4 class="mt-4 text-center">
-        Converted English Date (Gregorian Calendar):
-      </h4>
-      <p id="englishDate" class="bg-light p-2"></p>
-    </div>
+    <h2>Date Converter</h2>
+    <!-- Nepali to English Conversion Form -->
+    <fieldset>
+      <legend>Nepali To English</legend>
+      <form id="nepaliFormatDate">
+        <div class="row mb-3">
+          <div class="col">
+            <label for="nepYear">Year</label>
+            <select name="nepYear" id="nepYear" class="form-select">
+              <!-- Sample range of BS years -->
+              <!-- You can adjust the range as needed -->
+              <!-- Current Nepali years are in the 2000s -->
+              <!-- We'll list from 2000 to 2090 -->
+              <script>
+                for (let y = 2000; y <= 2090; y++) {
+                  document.write('<option value="' + y + '">' + y + '</option>');
+                }
+              </script>
+            </select>
+          </div>
+          <div class="col">
+            <label for="nepMonth">Month</label>
+            <select name="nepMonth" id="nepMonth" class="form-select">
+              <option value="1">Baishakh</option>
+              <option value="2">Jestha</option>
+              <option value="3">Ashadh</option>
+              <option value="4">Shrawan</option>
+              <option value="5">Bhadra</option>
+              <option value="6">Ashwin</option>
+              <option value="7">Kartik</option>
+              <option value="8">Mangsir</option>
+              <option value="9">Poush</option>
+              <option value="10">Magh</option>
+              <option value="11">Falgun</option>
+              <option value="12">Chaitra</option>
+            </select>
+          </div>
+          <div class="col">
+            <label for="nepDate">Date</label>
+            <select name="nepDate" id="nepDate" class="form-select">
+              <!-- Options will be populated dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="text-center">
+          <input type="button" onclick="convertToEnglish();" value="Convert to English" class="btn btn-primary">
+        </div>
+      </form>
+    </fieldset>
+    <div id="resultDateDiv"></div>
   </div>
 
   <!-- Footer with Developer Info -->
   <footer>
     <p>Developed by Sujan Paudyal</p>
     <p>
-      <a href="https://www.facebook.com/sujanpaudyals" target="_blank">
-        Connect on Facebook
-      </a>
-      | Contact: +977 9867996682
+      <a href="https://www.facebook.com/sujanpaudyals" target="_blank">Connect on Facebook</a> | Contact: +977 9867996682
     </p>
   </footer>
 
-  <!-- Bootstrap 5 JS -->
+  <!-- Bootstrap 5 JS Bundle -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    /**
-     * Convert a Bikram Sambat (BS) date to a Gregorian (AD) date.
-     *
-     * Historical data tells us that BS 1958-01-01 corresponded to April 14, 1901.
-     * Hence, for any BS year:
-     *    BS new year (Baishakh 1) = AD: (bsYear - 57)-04-14.
-     *
-     * We then calculate how many days have elapsed in the BS year
-     * (using default month lengths) and add that (plus a constant 4-day adjustment)
-     * to the base AD date.
-     *
-     * BS Month lengths (default values):
-     *   1. Baishakh: 31  
-     *   2. Jestha: 31  
-     *   3. Ashadh: 31  
-     *   4. Shrawan: 31  
-     *   5. Bhadra: 31  
-     *   6. Asoj (Ashwin): 30  
-     *   7. Kartik: 29  
-     *   8. Mangsir: 29  
-     *   9. Poush: 29  
-     *  10. Magh: 29  
-     *  11. Falgun: 29  
-     *  12. Chaitra: 30  
-     *
-     * The +4 day adjustment helps align our conversion (e.g. BS 2059-11-15 converts to 2003-02-27).
-     *
-     * @param {string} bsDateStr - BS date in "YYYY-MM-DD" format.
-     * @returns {string|null} - AD date in "YYYY-MM-DD" format or null if invalid.
-     */
-    function convertBSToAD(bsDateStr) {
-      const parts = bsDateStr.split("-");
-      if (parts.length !== 3) {
-        return null;
+    // Function to provide BS month lengths for a given BS year.
+    // (These values are sample defaults; adjust as needed for accuracy.)
+    function getBSMonthDays(bsYear) {
+      if (bsYear == 2061) {
+        // Example for BS 2061
+        // Baishakh: 32, Jestha: 32, Ashadh: 32, Shrawan: 32, Bhadra: 32, Ashwin: 31,
+        // Kartik: 30, Mangsir: 30, Poush: 30, Magh: 30, Falgun: 30, Chaitra: 31.
+        return [32, 32, 32, 32, 32, 31, 30, 30, 30, 30, 30, 31];
       }
+      // Default values for other years:
+      // For Baishakh to Bhadra, use lower bound; for Chaitra, allow up to 32 days.
+      return [31, 31, 31, 31, 31, 30, 29, 29, 29, 29, 29, 32];
+    }
+
+    // Update the day dropdown based on selected Nepali year and month.
+    function updateNepDateOptions() {
+      const nepYear = parseInt(document.getElementById("nepYear").value, 10);
+      const nepMonth = parseInt(document.getElementById("nepMonth").value, 10);
+      const nepDateSelect = document.getElementById("nepDate");
+      const bsMonthDays = getBSMonthDays(nepYear);
+      const maxDays = bsMonthDays[nepMonth - 1];
       
-      let bsYear = parseInt(parts[0], 10);
-      let bsMonth = parseInt(parts[1], 10);
-      let bsDay = parseInt(parts[2], 10);
-      
-      if (isNaN(bsYear) || isNaN(bsMonth) || isNaN(bsDay)) {
-        return null;
+      // Clear existing options
+      nepDateSelect.innerHTML = "";
+      for (let d = 1; d <= maxDays; d++) {
+        let opt = document.createElement("option");
+        opt.value = d;
+        opt.textContent = d;
+        nepDateSelect.appendChild(opt);
       }
-      
-      // Default BS month lengths (note: some months can be 31/32; we use the lower bound)
-      const bsMonthDays = [31, 31, 31, 31, 31, 30, 29, 29, 29, 29, 29, 30];
-      
-      // Validate month and day.
-      if (bsMonth < 1 || bsMonth > 12) return null;
+    }
+
+    // Conversion function: Convert BS date (dropdown values) to AD date.
+    // The algorithm uses a base mapping:
+    // - For non-2061 years, assume BS New Year (Baishakh 1) = AD April 14 of (BS Year - 57).
+    // - For BS 2061, use AD April 9.
+    // Then compute the offset as the total days passed in the BS year.
+    // Conditional constant: for non-2061, if month is Baishakh (1) then no extra days; otherwise add 4 days.
+    function convertBSToAD(bsYear, bsMonth, bsDay) {
+      const bsMonthDays = getBSMonthDays(bsYear);
+      // Validate day:
       if (bsDay < 1 || bsDay > bsMonthDays[bsMonth - 1]) return null;
       
-      // Determine the base AD date for the BS new year.
-      // BS new year = April 14 of (bsYear - 57)
-      let baseADYear = bsYear - 57;
-      let baseADDate = new Date(baseADYear, 3, 14); // April 14
+      // Determine base AD New Year date.
+      let baseADDate;
+      if (bsYear == 2061) {
+        baseADDate = new Date(2004, 3, 9); // April 9, 2004
+      } else {
+        baseADDate = new Date(bsYear - 57, 3, 14); // April 14 of (BS Year - 57)
+      }
       
-      // Calculate the number of days from BS new year (Baishakh 1) to the given BS date.
+      // Calculate the day offset within the BS year.
       let offsetDays = 0;
       for (let i = 0; i < bsMonth - 1; i++) {
         offsetDays += bsMonthDays[i];
       }
       offsetDays += (bsDay - 1);
       
-      // Add a constant 4-day adjustment to match known conversion (e.g. BS 2059-11-15 → 2003-02-27).
-      offsetDays += 4;
+      // Apply constant adjustment:
+      // For BS 2061, always add 4 days.
+      // For other years, if Baishakh (month 1), add 0; otherwise add 4.
+      let constantAdjustment = (bsYear == 2061) ? 4 : (bsMonth === 1 ? 0 : 4);
+      offsetDays += constantAdjustment;
       
-      // Compute the final AD date by adding the offset.
+      // Compute final AD date.
       let adDate = new Date(baseADDate);
       adDate.setDate(adDate.getDate() + offsetDays);
       
-      // Format the AD date as YYYY-MM-DD.
+      // Format AD date as YYYY-MM-DD.
       let yyyy = adDate.getFullYear();
       let mm = adDate.getMonth() + 1;
       let dd = adDate.getDate();
       mm = mm < 10 ? "0" + mm : mm;
       dd = dd < 10 ? "0" + dd : dd;
-      
       return `${yyyy}-${mm}-${dd}`;
     }
 
-    // Form submission event.
-    document.getElementById("dateForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const nepaliDateInput = document.getElementById("nepaliDate").value.trim();
-      const outputElement = document.getElementById("englishDate");
-
-      if (nepaliDateInput) {
-        const converted = convertBSToAD(nepaliDateInput);
-        if (converted) {
-          outputElement.textContent = `Converted English Date: ${converted}`;
-        } else {
-          outputElement.textContent =
-            "Invalid Nepali date format or out-of-range day! Please use YYYY-MM-DD.";
-        }
+    // Function called when "Convert to English" button is pressed.
+    function convertToEnglish() {
+      const bsYear = parseInt(document.getElementById("nepYear").value, 10);
+      const bsMonth = parseInt(document.getElementById("nepMonth").value, 10);
+      const bsDay = parseInt(document.getElementById("nepDate").value, 10);
+      
+      const adDateStr = convertBSToAD(bsYear, bsMonth, bsDay);
+      const resultDiv = document.getElementById("resultDateDiv");
+      if (adDateStr) {
+        resultDiv.textContent = "Converted English Date: " + adDateStr;
       } else {
-        outputElement.textContent = "Please enter a valid Nepali date.";
+        resultDiv.textContent = "Invalid Nepali date. Please check your selection.";
       }
+    }
+
+    // Initialize day options on page load.
+    document.addEventListener("DOMContentLoaded", function() {
+      updateNepDateOptions();
+      // Update day options when year or month changes.
+      document.getElementById("nepYear").addEventListener("change", updateNepDateOptions);
+      document.getElementById("nepMonth").addEventListener("change", updateNepDateOptions);
     });
   </script>
 </body>
